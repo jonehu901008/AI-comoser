@@ -1,0 +1,176 @@
+% CVPR 2022 Paper Template
+% based on the CVPR template provided by Ming-Ming Cheng (https://github.com/MCG-NKU/CVPR_Template)
+% modified and extended by Stefan Roth (stefan.roth@NOSPAMtu-darmstadt.de)
+
+\documentclass[10pt,twocolumn,letterpaper]{article}
+
+%%%%%%%%% PAPER TYPE  - PLEASE UPDATE FOR FINAL VERSION
+% \usepackage[review]{cvpr}      % To produce the REVIEW version
+\usepackage{cvpr}              % To produce the CAMERA-READY version
+%\usepackage[pagenumbers]{cvpr} % To force page numbers, e.g. for an arXiv version
+
+% Include other packages here, before hyperref.
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{CJKutf8}
+
+
+% It is strongly recommended to use hyperref, especially for the review version.
+% hyperref with option pagebackref eases the reviewers' job.
+% Please disable hyperref *only* if you encounter grave issues, e.g. with the
+% file validation for the camera-ready version.
+%
+% If you comment hyperref and then uncomment it, you should delete
+% ReviewTempalte.aux before re-running LaTeX.
+% (Or just hit 'q' on the first LaTeX run, let it finish, and you
+%  should be clear).
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+\usepackage{pifont}
+\usepackage{xcolor}
+\newcommand{\cmark}{\textcolor{green!80!black}{\ding{51}}}
+\newcommand{\xmark}{\textcolor{red}{\ding{55}}}
+
+% Support for easy cross-referencing
+\usepackage[capitalize]{cleveref}
+\crefname{section}{Sec.}{Secs.}
+\Crefname{section}{Section}{Sections}
+\Crefname{table}{Table}{Tables}
+\crefname{table}{Tab.}{Tabs.}
+
+
+%%%%%%%%% PAPER ID  - PLEASE UPDATE
+\def\cvprPaperID{*****} % *** Enter the CVPR Paper ID here
+\def\confName{CVPR}
+\def\confYear{2022}
+
+
+\begin{document}
+
+%%%%%%%%% TITLE - PLEASE UPDATE
+\title{AI music composer}
+
+\author{Jing-Hong Hu, Edwin Kuan Sheng Winn\\\
+National Yang Ming Chiao Tung University\\
+East District, Hsinchu City, TAIWAN\\
+{\tt\small henryhu.cs09@nycu.edu.tw}\\
+{\tt\small kuanedwin@gmail.com}
+% For a paper whose authors are all at the same institution,
+% omit the following lines up until the closing ``}''.
+% Additional authors and addresses can be added with ``\and'',
+% just like the second author.
+% To save space, use either the email address or home page, not both
+}
+\maketitle
+
+%%%%%%%%% ABSTRACT
+\begin{abstract}
+%   The ABSTRACT is to be in fully justified italicized text, at the top of the left-hand column, below the author and affiliation information.
+%   Use the word ``Abstract'' as the title, in 12-point Times, boldface type, centered relative to the column, initially capitalized.
+%   The abstract is to be in 10-point, single-spaced type.
+%   Leave two blank lines after the Abstract, then begin the main text.
+%   Look at previous CVPR abstracts to get a feel for style and length.
+\end{abstract}
+
+%%%%%%%%% BODY TEXT
+
+
+
+\section{Introduction}
+In this paper, we are trying to produce music stream via AI models, since all of our teammates are interested in composing, but has limited talent, so we think AI could help us deal with this problem. The main problem we focus on is how to convert music into a way that computer could understand? And how does our AI know whether the result it produced would be a “good” product?
+
+Algorithmic Composition has been along with a long history. By 18th century, Mozart had using a dice to choose from written small music sections to compose music, and it was the first idea of Algorithmic Composition.
+
+Nowadays, we’ve also found that some companies had done some remarkable works, such as Magenta and Able. And the main approach of AI composing was Markov Chain, RNN, LSTM, and GAN.
+
+We found that RNN and Markov chain is not enough for generate a good music, because it could only analyze data with partial aspect, but cannot see the whole sequence due to vanishing gradient, so the notes generated may not be dependent between start and end, LSTM does better work on it.
+
+On the other hand, both GANs and Self-Attention GANs are generally more difficult to successfully train. We also found much more success online with LSTMs for music generation, such as Magenta which uses LSTMs.
+
+We’ve found a baseline was trying to use LSTM model to imitate classic music, however, it can only deal with the chords and notes, but not the tempo, and we are trying to handle with different durations between notes.
+
+\section{Related Work}
+https://github.com/Skuldur/Classical-Piano-Composer
+
+
+\section{Methodology}
+\noindent
+\textbf{A. Prepare dataset}
+
+Our dataset was in midi file, which is a standard format of music, compose of pitch, instrument, durations and track. To simplify our dataset, we choose those which has only one track (instrument). Intentionally, we would like to use some of the hymns in church, however, it was not easy to find them in midi files, since most of them are just for worship use. So we found several classic music instead.
+
+\noindent
+\textbf{B. Convert data}
+
+Notes and chords in MIDI is recorded as events, we use music21 (a python tool) to extract data and change into python arrays with just information of pitch and duration. All of our default midi files are generated as piano track. 
+We start by loading each file into a Music21 stream object using the converter.parse(file) function. Using the stream object, we get a list of all the notes and chords in the file. We append the pitch of every note object using its string notation since the most significant parts of the note can be recreated using the string notation of the pitch. And we append every chord by encoding the id of every note in the chord together into a single string, with each note being separated by a dot. These encodings allow us to easily decode the output generated by the network into the correct notes and chords.
+Now that we have put all the notes and chords into a sequential list we can create the sequences that will serve as the input of our network.
+
+\noindent
+\textbf{C. Generate Network}
+
+Our Network consist of four kinds of layers, 
+\textbf{LSTM layers} is a Recurrent Neural Net layer that takes a sequence as an input and can return either sequences (return\textunderscore sequences=True) or a matrix.
+
+\textbf{Dropout layers} are a regularisational technique that consists of setting a fraction of input units to 0 at each update during the training to prevent overfitting. The fraction is determined by the parameter used with the layer.
+
+\textbf{Dense layers} or \textbf{fully connected layers} is a fully connected neural network layer where each input node is connected to each output node.
+
+\textbf{The Activation layer} determines what activation function our neural network will use to calculate the output of a node.
+
+We use \textbf{Keras} to achieve this goal, which is a high-level neural networks API that simplifies interactions with Tensorflow. It was developed with a focus on enabling fast experimentation.
+
+We use the Keras library to create and train the LSTM model. Once the model is trained we will use it to generate the musical notation for our music.
+
+\noindent
+\textbf{D. Generate music}
+
+To be able to use the neural network to generate music we put it into the same state as before, so we will reuse code from the training section to prepare the data and set up the network model in the same way as before. Except of training the network we load the weights that we saved during the training section into the model. 
+
+Now we can use the trained model to start generating notes. Since we have a full list of note sequences and several kinds of duration at our disposal we will pick a random index in the list as our starting point, this allows us to rerun the generation code without changing anything and get different results every time. 
+
+Here we also need to create a mapping function to decode the output of the network. This function will map from numerical data to categorical data (from integers to notes).
+
+We chose to generate 500 notes using the network to gives the network plenty of space to create a melody. For each note that we want to generate we have to submit a sequence to the network. The first sequence we submit is the sequence of notes at the starting index. For every subsequent sequence that we use as input, we will remove the first note of the sequence and insert the output of the previous iteration at the end of the sequence.
+
+Then we collect all the outputs (note/chord, duration) from the network into a single array.
+
+Now that we have all the encoded representations of the notes and chords and its duration in an array we can start decoding them and creating an array of Note and Chord objects.
+
+At the end of each iteration we increase the offset by its duration and append the Note/Chord object created to a list.
+
+
+\section{Experiments}
+So, we train our model for 200 epochs and having checkpoints saved for every epoch that have a lower loss rate (crossentropy loss between the labels and predictions). After the training, we can predict or say produce a music by choosing some checkpoints.
+
+The results for the 1st epoch are just repeating of one note, acting like a metronome. As the number of epochs increases to around 30th epoch, it still has the same repeating behavior, just a slight different in the rhythm, and the reason for these results could be the LSTM model have not earn enough memories yet.
+
+Around the 70th epoch the output music is still repeating notes but at least it has multiple notes used, unlike the early results. At 100th epoch, it improves by producing a short melody repeating (like a bass line moving in the background of music), which means it can really produce some stuff.
+Going on to the 130th epoch, it also produces a short repeating ‘melody’, with more notes compared to the previous result, but unlike the simple bassline-like tune, this time it sounds more like ‘noises’- random spanking of notes. And these similar results finally make a change at around 200th epoch, audible results are produced.
+
+Here we have another problem is that initially we have had the offset to be a fixed constant, this made the notes produced to have a similar rhythm, which is quite boring for 500 notes, so a change made is to train the duration of each note along with its pitch, specifically, instead of training only the note originally, we train the note and its duration as a tuple.
+
+After the training and prediction, we have similar results in the early epochs compared to the usual ones, it finally makes a difference to have more variations of rhythms in the end of training. A downside of this change is that the music produced has some unexpected rhythms, for example, insanely fast runs and some long periods of rests (which no notes is played).
+
+At this point, although having the downsides that happens occasionally, what happens frequently is the output still contains some noises, which is quite annoying sometimes. So, to tackle this problem we remove the ‘chord’ part, since a wrong key chord really damages the ear, and an extension to it is to decrease the number of nodes of the LSTM model (512 to 256), so that there are lesser variation and chances to make a ‘brave’ prediction.
+
+At first, the shrinking of the LSTM model really makes a different in the computing time (about 2~3 times faster), and as always, the 1st few epochs will be the repeating ones, but after 100 epochs, something gets weird. The result produced were still repeating single note. 2.5 hours later, the 200th epoch results kind of changes, but just a little, 2 notes were played in the same rhythm, repeating, which in our perspective, not much has changed.
+
+So, we failed to produce a single line melody, due to the limited time, the experiment will end here.
+
+%-------------------------------------------------------------------------
+
+%%%%%%%%% REFERENCES
+{\small
+\bibliographystyle{ieee_fullname}
+\bibliography{egbib}
+}
+https://keras.io/
+
+https://web.mit.edu/music21/
+
+https://towardsdatascience.com/how-to-generate-music-using-a-lstm-neural-network-in-keras-68786834d4c5
+
+\end{document}
