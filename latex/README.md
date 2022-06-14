@@ -26,7 +26,7 @@ To apply it, simply use one of the following commands:
 \def\confYear{2022}
 
 ```
-
+demo video: https://drive.google.com/drive/folders/1mRQMMe9olTj3BUpvpkfvU2jnB47598_g?usp=sharing
 
 # Acknowledgements
 This template is modified from the template by Ming-Ming Cheng from Nankai University (cmm_spam@nankai.edu.cn, see also https://github.com/MCG-NKU/CVPR_Template). That version was again modified from the the old CVPR/ICCV template files contributed by Paolo.Ienne@di.epfl.ch and awf@acm.org.
