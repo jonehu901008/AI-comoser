@@ -1,2 +1,2 @@
-# AI-comoser
+# AI-composer
 Using LSTM to compose notation
